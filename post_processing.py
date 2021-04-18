@@ -20,16 +20,10 @@ droplets = pd.read_csv(f'{directory}/Results_combined.csv',header=0,usecols=[1,6
 droplets.right = 180 - droplets.right
 droplets.left = 180 - droplets.left
 
-#assumes that all drops in the file have same properties
-Drop_Material = overview.loc[1, "Drop_Material"]  # This assumption should be fine but is it really needed
-Material = overview.loc[1, "Material"] # note you are actually taking the second element not the first
-Time = str(overview.loc[1, "Time"]) # are you just trying to make it not a datetime object?
-Date = Time.split(" ")[0]
-
 #cleans up the file names by only keeping the image number
 array = []
 for cap in droplets.name:
-    cap = cap.split('.')[0] # this fails with 'Image0243-1.tif' that occurs when doing multiple rounds in ImageJ
+    cap = cap.split('.')[0].split('-')[0] # this fails with 'Image0243-1.tif' that occurs when doing multiple rounds in ImageJ
     num = "" # why not cap = cap.split('.')[0].split('-')[0]
     for i in cap: # you can also just put this straight in for n, cap in enumerate(droplets.name):
         if i.isnumeric(): # droplets.loc[n,'name'] = num
@@ -38,21 +32,21 @@ for cap in droplets.name:
 droplets.name = array
 
 #creates a new dataframe to store data in terms of each drop
-drop_overview = pd.DataFrame(columns=["Drop #", "Image Number", "Stage Temperature [C]", "Left angle", "Right angle", "Area"])
+by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area"])
 #make image number first
-for ind in overview.index: # probably change to in range(len(overview))
-    for idx in droplets.index:
+for ind in range(len(overview)): # probably change to in range(len(overview))
+    for idx in range(len(droplets)):
         try:
             if overview.loc[ind, "Image"] <= droplets.loc[idx, "name"] and overview.loc[ind+1, "Image"] > droplets.loc[idx, "name"]:
-                array = [overview.loc[ind,"Drop"],droplets.loc[idx,"name"],overview.loc[ind,"Temp"],droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
-                drop_overview.loc[len(drop_overview.index)] = array # .loc[ind] = 
+                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],droplets.loc[idx,"left"],droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
+                by_image.loc[ind] = array # .loc[ind] =
         except KeyError:
             if overview.Image[ind] <= droplets.name[idx]:
-                array = [overview.loc[ind,"Drop"],droplets.loc[idx,"name"],overview.loc[ind,"Temp"],droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]] # It may be better to write a function that grabs this info because it is confusing to the reader
-                drop_overview.loc[len(drop_overview.index)] = array
-drop_overview.to_csv(f"{directory}/output_byPicture.csv")
+                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
+                by_image.loc[ind] = array
+by_image.to_csv(f"{directory}/output_byImage.csv")
 
-by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std"])
+by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std"])
 # dtypes to make output cleaner^^
 for ind in overview.index:
     angles = []
@@ -74,11 +68,14 @@ for ind in overview.index:
                 left.append(droplets.left[idx])
                 right.append(droplets.right[idx])
                 area.append(droplets.area[idx])
-    array = [overview.Drop[ind],overview.Temp[ind],np.mean(left), np.mean(right), np.mean(angles), np.mean(area), np.std(left),np.std(right),np.std(angles),np.std(area)] # np.mean(angles) can be np.mean(left.extend(right)) and you don't need angles anymore
+    array = [overview.Drop[ind],overview.Temp[ind],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],np.mean(left), np.mean(right), np.mean(angles), np.mean(area), np.std(left),np.std(right),np.std(angles),np.std(area)] # np.mean(angles) can be np.mean(left.extend(right)) and you don't need angles anymore
     array2 = []
     for x in array:
-        x = round(float(x), 2)
-        array2.append(x)
+        try:
+            x = round(float(x), 2)
+            array2.append(x)
+        except:
+            array2.append(x)
     by_drop.loc[len(by_drop.index)] = array2
 by_drop[["Drop #"]] = by_drop[["Drop #"]].astype(int)
 by_drop.to_csv(f"{directory}/output_byDrop.csv")
