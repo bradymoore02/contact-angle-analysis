@@ -48,4 +48,4 @@ Take raw image files of a drop on a surface and analyze the contact angles
 ```
 python3 post_processing.py
 ```
-4. Two csv files are created as output. [Output_byDrop.csv](examples/Output_byDrop.csv) organizes the data by drop and [Output_byImage.csv](examples/Output_byImage.csv) organizes the data by image (click on the file names to see examples).
+4. Two csv files are created as output. [output_byDrop.csv](examples/output_byDrop.csv) organizes the data by drop and [output_byImage.csv](examples/output_byImage.csv) organizes the data by image (click on the file names to see examples).
