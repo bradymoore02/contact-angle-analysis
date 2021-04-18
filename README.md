@@ -10,10 +10,11 @@ Take raw image files of a drop on a surface and analyze the contact angles
 2. Select all (⌘A).
 3. Open with Preview (⌘O).
 4. Use mouse to select only the area containing the drop.
+![Full Image](examples/Images/Full_image.png)
 5. Crop the image (⌘K).
 6. Go to next image (down arrow key).
 7. Repeat steps 4 and 5 for each image.
-8. Make a copy entire folder of images and save it next to the first folder.
+8. Make a copy of the entire folder of images and save it next to the first folder. One of these folders will eventually house the images with an ellipse fit overlayed, and the other will contain the original cropped images.
 ##### 2. ImageJ
 1. Open FIJI.
 2. Drag the first cropped image file from finder into the lower bar in FIJI.
@@ -39,7 +40,7 @@ Take raw image files of a drop on a surface and analyze the contact angles
 12. Click on the results file and save as "Results.csv" in the same directory as the contact-angle-analysis folder.
 ![Results.csv](examples/Images/Results_file.png)
 ##### 3. Analysis
-1. Make a new csv file called Overview.csv with the following information: Drop Number,Time,Location,Material,Drop Material,Image Number Start,Interpolated Temperature,Tip Temperature,Pressure. Look in the examples folder for an example of the Overview.csv file.
+1. Make a new csv file called Overview.csv with the following information: Drop Number,Time,Location,Material,Drop Material,Image Number Start,Interpolated Temperature,Tip Temperature,Pressure. Look in the examples folder for an example of the [Overview.csv](examples/Overview.csv) file.
 2. Open a terminal and navigate to the Contact Angle Analysis directory.
 3. Run the post_processing.py file by typing the following into the command line:
 ```
