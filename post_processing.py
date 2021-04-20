@@ -14,7 +14,7 @@ directory = ".."
 #read in the overview file and save as a data frame
 overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
 #read in the results file from FIJI and save as a data frame
-droplets = pd.read_csv(f'{directory}/Results_combined.csv',header=0,usecols=[1,6,7,14], names=["name","left","right","area"])
+droplets = pd.read_csv(f'{directory}/Results.csv',header=0,usecols=[1,6,7,14], names=["name","left","right","area"])
 
 #correct the contact angles which are supplementary to the correct angle
 droplets.right = 180 - droplets.right
@@ -79,5 +79,4 @@ for ind in overview.index:
     by_drop.loc[len(by_drop.index)] = array2
 by_drop[["Drop #"]] = by_drop[["Drop #"]].astype(int)
 by_drop.to_csv(f"{directory}/output_byDrop.csv")
-print(by_drop)
 #out.plot.scatter("Stage Temperature [K]", "Mean angle [Degrees]",yerr="Std. angle",title=f"{Drop_Material} Drop on {Material} Stage on {Date}  ")

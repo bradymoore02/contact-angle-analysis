@@ -20,7 +20,7 @@ Take raw image files of a drop on a surface and analyze the contact angles
 #### 2. ImageJ
 1. Open FIJI.
 2. Drag the first cropped image file from finder into the lower bar in FIJI.
-![Toolbar](examples/Images/FIJI_toolbar.png)
+![Toolbar](examples/Images/FIJI_toolbar.png =widthxheight)
 3. Start typing "Contact Angle" into the FIJI search bar.
 ![Search Bar](examples/Images/Contact_Angle_plugin.png)
 4. Hit enter to open the Contact Angle plugin
