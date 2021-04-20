@@ -37,9 +37,11 @@ Take raw image files of a drop on a surface and analyze the contact angles
 10. Open the next image in FIJI(⌘⇧O).
 11. A window will pop up asking you to save the image. Hit enter to save on the first time through the images.
 ![Save as](examples/Images/Save_as.png)
-12. Repeat steps 3 through 10 until this has been done once for each image.
-13. Now do this 2 more times for each image. Notice a few slight changes. For step 2, go to the copied folder that has undoctored images to drag in the first image. In step 11, don't save the new images this time. In the end, you will use the plugin three times on each image. This means repeating steps 2 through 10 two more times with the slight changes.
-12. Click on the results file and save as "Results.csv" in the same directory as the contact-angle-analysis folder.
+12. Exit the contact angle plugin by clicking this button in the FIJI toolbar.
+![Exit Button](examples/Images/exit.png)
+13. Repeat steps 3 through 12 until this has been done once for each image.
+14. Now do this 2 more times for each image. Notice a few slight changes. For step 2, go to the copied folder that has undoctored images to drag in the first image. In step 11, don't save the new images this time. In the end, you will use the plugin three times on each image. This means repeating steps 2 through 10 two more times with the slight changes.
+15. Click on the results file and save as "Results.csv" in the same directory as the contact-angle-analysis folder.
 ![Results.csv](examples/Images/Results_file.png)
 #### 3. Analysis
 1. Make a new csv file called Overview.csv with the following information: Drop Number,Time,Location,Material,Drop Material,Image Number Start,Interpolated Temperature,Tip Temperature,Pressure. Here is an example of the [Overview.csv](examples/Overview.csv) file.
