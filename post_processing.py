@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt  # unused
 
-directory = ".."
+directory = "../glass_slide"
 #read in the overview file and save as a data frame
 overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
 #read in the results file from FIJI and save as a data frame
@@ -39,11 +39,11 @@ for ind in range(len(overview)): # probably change to in range(len(overview))
         try:
             if overview.loc[ind, "Image"] <= droplets.loc[idx, "name"] and overview.loc[ind+1, "Image"] > droplets.loc[idx, "name"]:
                 array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],droplets.loc[idx,"left"],droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
-                by_image.loc[ind] = array # .loc[ind] =
+                by_image.loc[idx] = array # .loc[ind] =
         except KeyError:
             if overview.Image[ind] <= droplets.name[idx]:
                 array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
-                by_image.loc[ind] = array
+                by_image.loc[idx] = array
 by_image.to_csv(f"{directory}/output_byImage.csv")
 
 by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std"])
@@ -78,5 +78,5 @@ for ind in overview.index:
             array2.append(x)
     by_drop.loc[len(by_drop.index)] = array2
 by_drop[["Drop #"]] = by_drop[["Drop #"]].astype(int)
-by_drop.to_csv(f"{directory}/output_byDrop.csv")
+by_drop.to_csv(f"{directory}/output_byDrop.csv", index=False)
 #out.plot.scatter("Stage Temperature [K]", "Mean angle [Degrees]",yerr="Std. angle",title=f"{Drop_Material} Drop on {Material} Stage on {Date}  ")
