@@ -16,12 +16,13 @@ for dir,subdirs,files in walk(directory):
                 except NameError:
                     data = pd.read_csv(f"{directory}/{subdir}/output_byDrop.csv")
             except FileNotFoundError:
+                print("not found")
                 pass
 
 print(data.head())
 drop = data["Drop Material"][0]
 subs = data["Stage Material"][0]
-date = datetime.strptime(data["Time"][0], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
+date = datetime.strptime(data["Time"][0], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
 data.sort_values("Stage Temperature [C]", inplace=True)
 fig, ax = plt.subplots()
 ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"], marker = "x",

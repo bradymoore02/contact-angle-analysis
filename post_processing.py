@@ -17,10 +17,8 @@ tk.Tk().withdraw()
 while True:
     directory = filedialog.askdirectory(initialdir=os.path.expanduser('~'))
     try:
-#read in the overview file and save as a data frame
-        overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
-#read in the results file from FIJI and save as a data frame
-        droplets = pd.read_csv(f'{directory}/Results.csv',header=0,usecols=[1,6,7,14], names=["name","left","right","area"])
+        droplets = pd.read_csv(f'{directory}/Results.csv', header=0, usecols=[1,6,7,14], names=["name","left","right","area"])
+        overview = pd.read_excel(f'{directory}/Overview.xlsx', header=0, usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"], converters={5:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
         break
     except FileNotFoundError:
         if messagebox.askquestion('No Data Found',
@@ -30,7 +28,7 @@ while True:
 
 
 
-
+print(overview.head())
 #correct the contact angles which are supplementary to the correct angle
 droplets.right = 180 - droplets.right
 droplets.left = 180 - droplets.left
@@ -51,16 +49,13 @@ by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C
 #make image number first
 for ind in range(len(overview)): # probably change to in range(len(overview))
     for idx in range(len(droplets)):
-        date = datetime.strptime(overview.loc[ind,"Time"], '%Y-%m-%d %H:%M:%S')
         try:
             if overview.loc[ind, "Image"] <= droplets.loc[idx, "name"] and overview.loc[ind+1, "Image"] > droplets.loc[idx, "name"]:
-                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],droplets.loc[idx,"left"],droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
-                array.append(date)
+                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],droplets.loc[idx,"left"],droplets.loc[idx,"right"],droplets.loc[idx,"area"],overview.loc[ind,"Time"]]
                 by_image.loc[idx] = array # .loc[ind] =
         except KeyError:
             if overview.Image[ind] <= droplets.name[idx]:
-                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
-                array.append(date)
+                array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"],overview.loc[ind,"Time"]]
                 by_image.loc[idx] = array
 by_image.to_csv(f"{directory}/output_byImage.csv")
 
@@ -89,7 +84,7 @@ for ind in overview.index:
     array = [overview.Drop[ind],overview.Temp[ind],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],np.mean(left), np.mean(right), np.mean(angles), np.mean(area), np.std(left),np.std(right),np.std(angles),np.std(area)] # np.mean(angles) can be np.mean(left.extend(right)) and you don't need angles anymore
     array2 = []
     for x in array:
-        date = datetime.strptime(overview.loc[ind,"Time"], '%Y-%m-%d %H:%M:%S')
+        date = overview.loc[ind,"Time"]
         try:
             x = round(float(x), 2)
             array2.append(x)

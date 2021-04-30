@@ -41,13 +41,19 @@ Take raw image files of a drop on a surface and analyze the contact angles
 ![Exit Button](examples/Images/exit.png)
 13. Repeat steps 3 through 12 until this has been done once for each image.
 14. Now do this 2 more times for each image. Notice a few slight changes. For step 2, go to the copied folder that has undoctored images to drag in the first image. In step 11, don't save the new images this time. In the end, you will use the plugin three times on each image. This means repeating steps 2 through 10 two more times with the slight changes.
-15. Click on the results file and save as "Results.csv" in the same directory as the contact-angle-analysis folder.\
+15. Click on the results window (pictured below) and save as "Results.csv" in a new folder.
 ![Results.csv](examples/Images/Results_file.png)
 #### 3. Analysis
-1. Make a new csv file called Overview.csv with the following information: Drop Number,Time,Location,Material,Drop Material,Image Number Start,Interpolated Temperature,Tip Temperature,Pressure. Here is an example of the [Overview.csv](examples/Overview.csv) file.
-2. Open a terminal and navigate to the Contact Angle Analysis directory.
-3. Run the post_processing.py file by typing the following into the command line:
+1. Open a terminal and navigate to the contact-angle-analysis directory on your computer using cd commands.
+2. Run pre_processing.py from the terminal by typing the following into the command line:
+```
+python3 pre_processing.py
+```
+3. When prompted, select the directory with the data-X.pkl files (where X is a number 0-3).
+4. This will create a file called Overview.xlsx. Move Overview.xlsx to the same folder that Results.csv was saved in.
+5. Run post_processing.py from the terminal by typing:
 ```
 python3 post_processing.py
 ```
-4. Two csv files are created as output. [output_byDrop.csv](examples/output_byDrop.csv) organizes the data by drop and [output_byImage.csv](examples/output_byImage.csv) organizes the data by image (click on the file names to see examples).
+6. Select the folder you created earlier (now containing the Overview.xlsx and Results.csv files).
+5. Two csv files are created as output. [output_byDrop.csv](examples/output_byDrop.csv) organizes the data by drop and [output_byImage.csv](examples/output_byImage.csv) organizes the data by image (click on the file names to see examples).
