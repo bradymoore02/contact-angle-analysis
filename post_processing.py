@@ -9,8 +9,9 @@ Created on Fri Mar 19 08:05:11 2021
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt  # unused
+from datetime import datetime
 
-directory = "../glass_slide"
+directory = "../glass_slide/04-16-21"
 #read in the overview file and save as a data frame
 overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
 #read in the results file from FIJI and save as a data frame
@@ -32,21 +33,24 @@ for cap in droplets.name:
 droplets.name = array
 
 #creates a new dataframe to store data in terms of each drop
-by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area"])
+by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area", "Time"])
 #make image number first
 for ind in range(len(overview)): # probably change to in range(len(overview))
     for idx in range(len(droplets)):
+        date = datetime.strptime(overview.loc[ind,"Time"], '%Y-%m-%d %H:%M:%S')
         try:
             if overview.loc[ind, "Image"] <= droplets.loc[idx, "name"] and overview.loc[ind+1, "Image"] > droplets.loc[idx, "name"]:
                 array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],droplets.loc[idx,"left"],droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
+                array.append(date)
                 by_image.loc[idx] = array # .loc[ind] =
         except KeyError:
             if overview.Image[ind] <= droplets.name[idx]:
                 array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"]]
+                array.append(date)
                 by_image.loc[idx] = array
 by_image.to_csv(f"{directory}/output_byImage.csv")
 
-by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std"])
+by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std", "Time"])
 # dtypes to make output cleaner^^
 for ind in overview.index:
     angles = []
@@ -71,12 +75,14 @@ for ind in overview.index:
     array = [overview.Drop[ind],overview.Temp[ind],overview.loc[ind,"Material"],overview.loc[ind,"Drop_Material"],np.mean(left), np.mean(right), np.mean(angles), np.mean(area), np.std(left),np.std(right),np.std(angles),np.std(area)] # np.mean(angles) can be np.mean(left.extend(right)) and you don't need angles anymore
     array2 = []
     for x in array:
+        date = datetime.strptime(overview.loc[ind,"Time"], '%Y-%m-%d %H:%M:%S')
         try:
             x = round(float(x), 2)
             array2.append(x)
         except:
             array2.append(x)
+    array2.append(date)
     by_drop.loc[len(by_drop.index)] = array2
+
 by_drop[["Drop #"]] = by_drop[["Drop #"]].astype(int)
 by_drop.to_csv(f"{directory}/output_byDrop.csv", index=False)
-#out.plot.scatter("Stage Temperature [K]", "Mean angle [Degrees]",yerr="Std. angle",title=f"{Drop_Material} Drop on {Material} Stage on {Date}  ")
