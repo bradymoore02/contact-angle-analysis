@@ -1,21 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 19 08:05:11 2021
-
-@author: bradymoore
+Post processing for contact angle analysis.
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt  # unused
 from datetime import datetime
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import os
+import sys
 
-directory = "../glass_slide/04-16-21"
+tk.Tk().withdraw()
+while True:
+    directory = filedialog.askdirectory(initialdir=os.path.expanduser('~'))
+    try:
 #read in the overview file and save as a data frame
-overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
+        overview = pd.read_csv(f'{directory}/Overview.csv',header=0,usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"],converters={6:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
 #read in the results file from FIJI and save as a data frame
-droplets = pd.read_csv(f'{directory}/Results.csv',header=0,usecols=[1,6,7,14], names=["name","left","right","area"])
+        droplets = pd.read_csv(f'{directory}/Results.csv',header=0,usecols=[1,6,7,14], names=["name","left","right","area"])
+        break
+    except FileNotFoundError:
+        if messagebox.askquestion('No Data Found',
+                                  'No data was found. '
+                                  'Would you like to try another directory?') == 'no':
+            sys.exit()
+
+
+
 
 #correct the contact angles which are supplementary to the correct angle
 droplets.right = 180 - droplets.right
