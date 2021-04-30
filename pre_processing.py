@@ -139,16 +139,17 @@ for line in loglines:
         try:
             dropInfo.append([int(number), time, int(location), substrate,
                          dropMaterial, int(imageStart), round(float(interpTemp), 2),
-                         round(tipTemp, 2), float('{:.2e}'.format(pressure))])
+                         round(tipTemp, 2), float('{:.2e}'.format(pressure)),"None"])
         except ValueError:
             dropInfo.append([int(number), time, int(location), substrate,
-                         dropMaterial, int(imageStart[0:4]), round(float(interpTemp), 2),
-                         round(tipTemp, 2), float('{:.2e}'.format(pressure))])
+                         dropMaterial, int(imageStart[0:5]), round(float(interpTemp), 2),
+                         round(tipTemp, 2), float('{:.2e}'.format(pressure)),imageStart[21:-2]])
 
+#!!!!!!!! added a try except in line 139 to deal with comments
 # Convert the droplet info into a Pandas DataFrame and write to Excel file
 Drops = pd.DataFrame(dropInfo, columns=['Drop Number', 'Time', 'Drop Location',
                                         'Substrate Material', 'Drop Material',
                                         'Starting Image Number', 'Stage Temperature (degC)',
-                                        'Injector Tip Temperature (degC)', 'Pressure (Torr)'])
+                                        'Injector Tip Temperature (degC)', 'Pressure (Torr)', 'Comments'])
 
 Drops.to_excel(f'{directory}/Overview.xlsx', index=False)
