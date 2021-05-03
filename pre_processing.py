@@ -145,7 +145,7 @@ for line in loglines:
                          dropMaterial, int(imageStart[0:5]), round(float(interpTemp), 2),
                          round(tipTemp, 2), float('{:.2e}'.format(pressure)),imageStart[21:-2]])
 
-#!!!!!!!! added a try except in line 139 to deal with comments
+
 # Convert the droplet info into a Pandas DataFrame and write to Excel file
 Drops = pd.DataFrame(dropInfo, columns=['Drop Number', 'Time', 'Drop Location',
                                         'Substrate Material', 'Drop Material',

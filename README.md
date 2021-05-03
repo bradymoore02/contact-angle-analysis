@@ -49,7 +49,7 @@ Take raw image files of a drop on a surface and analyze the contact angles
 ```
 python3 pre_processing.py
 ```
-3. When prompted, select the directory with the data-X.pkl files (where X is a number 0-3).
+3. When prompted, select the directory with the data-X.pkl files (where X is a number).
 4. This will create a file called Overview.xlsx. Move Overview.xlsx to the same folder that Results.csv was saved in.
 5. Run post_processing.py from the terminal by typing:
 ```
