@@ -2,15 +2,16 @@
 This file plots contact angle vs stage temperature for a given substrate.
 '''
 import matplotlib.pyplot as plt
-from os import listdir, walk
+import os
 import pandas as pd
 from datetime import datetime
 import numpy as np
 
-directory = "../glass_slide"
-for dir,subdirs,files in walk(directory):
+directory = "../GF-Wetting/YttriaCoatedSlide"
+for dir, subdirs, files in os.walk(directory):
     if dir == directory:
         for subdir in subdirs:
+            print(subdir)
             try:
                 try:
                     data = data.append(pd.read_csv(f"{directory}/{subdir}/output_byDrop.csv"))
@@ -19,11 +20,12 @@ for dir,subdirs,files in walk(directory):
             except FileNotFoundError:
                 print("not found")
                 pass
-
-print(data.head())
-drop = data["Drop Material"][0]
-subs = data["Stage Material"][0]
-date = datetime.strptime(data["Time"][0], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
+data.reset_index(inplace=True)
+data = data.drop(0)
+print(data)
+drop = data["Drop Material"][1]
+subs = data["Stage Material"][1]
+date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
 data.sort_values("Stage Temperature [C]", inplace=True)
 fig, ax = plt.subplots()
 ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"], marker = "s",

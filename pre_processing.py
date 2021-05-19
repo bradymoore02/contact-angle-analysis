@@ -152,4 +152,4 @@ Drops = pd.DataFrame(dropInfo, columns=['Drop Number', 'Time', 'Drop Location',
                                         'Starting Image Number', 'Stage Temperature (degC)',
                                         'Injector Tip Temperature (degC)', 'Pressure (Torr)', 'Comments'])
 
-Drops.to_excel(f'{directory}/Overview.xlsx', index=False)
+Drops.to_excel(f'{os.path.split(directory)[0]}/Overview.xlsx', index=False)

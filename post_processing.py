@@ -17,8 +17,8 @@ tk.Tk().withdraw()
 while True:
     directory = filedialog.askdirectory(initialdir=os.path.expanduser('~'))
     try:
-        droplets = pd.read_csv(f'{directory}/Results.csv', header=0, usecols=[1,6,7,14], names=["name","left","right","area"])
-        overview = pd.read_excel(f'{directory}/Overview.xlsx', header=0, usecols=[0,1,3,4,5,6], names=["Drop","Time","Material","Drop_Material","Image","Temp"], converters={5:lambda x: round(float(x), 2)}) # the standard is a , with one space after such as .csv', usecols
+        droplets = pd.read_csv(f'{directory}/Results.csv', header=0, usecols=[1,6,7,14], names=["name", "left", "right", "area"])
+        overview = pd.read_excel(f'{directory}/Overview.xlsx', header=0, usecols=[0,1,3,4,5,6], names=["Drop", "Time", "Material", "Drop_Material", "Image", "Temp"], converters={5:lambda x: round(float(x), 2)})
         break
     except FileNotFoundError:
         if messagebox.askquestion('No Data Found',
@@ -28,7 +28,7 @@ while True:
 
 
 
-print(overview.head())
+
 #correct the contact angles which are supplementary to the correct angle
 droplets.right = 180 - droplets.right
 droplets.left = 180 - droplets.left
@@ -36,14 +36,16 @@ droplets.left = 180 - droplets.left
 #cleans up the file names by only keeping the image number
 array = []
 for cap in droplets.name:
-    cap = cap.split('.')[0].split('-')[0] # this fails with 'Image0243-1.tif' that occurs when doing multiple rounds in ImageJ
-    num = "" # why not cap = cap.split('.')[0].split('-')[0]
+    cap = cap.split('.')[0].split('-')[0].split('_')[-1]
+    
+    num = ""
     for i in cap: # you can also just put this straight in for n, cap in enumerate(droplets.name):
         if i.isnumeric(): # droplets.loc[n,'name'] = num
             num += i
     array.append(int(num))
 droplets.name = array
 
+print(droplets.name)
 #creates a new dataframe to store data in terms of each drop
 by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area", "Time"])
 #make image number first
