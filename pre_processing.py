@@ -116,7 +116,6 @@ for key, value in data.items():
         stagePins.append(key)
 
 # Grab the info about each droplet from the log file.
-#
 # In order: droplet number, time of droplet placement,
 # location of droplet, substrate material, droplet material
 # image number starting images of droplet, stage temperature

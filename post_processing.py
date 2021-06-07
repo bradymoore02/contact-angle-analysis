@@ -36,8 +36,7 @@ droplets.left = 180 - droplets.left
 #cleans up the file names by only keeping the image number
 array = []
 for cap in droplets.name:
-    cap = cap.split('.')[0].split('-')[0].split('_')[-1]
-    
+    cap = str(cap).split('.')[0].split('-')[0].split('_')[-1]
     num = ""
     for i in cap: # you can also just put this straight in for n, cap in enumerate(droplets.name):
         if i.isnumeric(): # droplets.loc[n,'name'] = num
@@ -45,7 +44,6 @@ for cap in droplets.name:
     array.append(int(num))
 droplets.name = array
 
-print(droplets.name)
 #creates a new dataframe to store data in terms of each drop
 by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area", "Time"])
 #make image number first
