@@ -15,7 +15,7 @@ import sys
 
 tk.Tk().withdraw()
 while True:
-    directory = filedialog.askdirectory(initialdir=os.path.expanduser('~'))
+    directory = filedialog.askdirectory(initialdir=os.path.expanduser('~/Desktop/Lithium_Wetting/GF-Wetting'))
     try:
         droplets = pd.read_csv(f'{directory}/Results.csv', header=0, usecols=[1,6,7,14], names=["name", "left", "right", "area"])
         overview = pd.read_excel(f'{directory}/Overview.xlsx', header=0, usecols=[0,1,3,4,5,6], names=["Drop", "Time", "Material", "Drop_Material", "Image", "Temp"], converters={5:lambda x: round(float(x), 2)})
@@ -47,7 +47,7 @@ droplets.name = array
 #creates a new dataframe to store data in terms of each drop
 by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Area", "Time"])
 #make image number first
-for ind in range(len(overview)): # probably change to in range(len(overview))
+for ind in range(len(overview)):
     for idx in range(len(droplets)):
         try:
             if overview.loc[ind, "Image"] <= droplets.loc[idx, "name"] and overview.loc[ind+1, "Image"] > droplets.loc[idx, "name"]:
@@ -57,7 +57,8 @@ for ind in range(len(overview)): # probably change to in range(len(overview))
             if overview.Image[ind] <= droplets.name[idx]:
                 array = [droplets.loc[idx,"name"],overview.loc[ind,"Drop"],overview.loc[ind,"Temp"], overview.loc[ind,"Material"], overview.loc[ind,"Drop_Material"], droplets.loc[idx,"left"], droplets.loc[idx,"right"],droplets.loc[idx,"area"],overview.loc[ind,"Time"]]
                 by_image.loc[idx] = array
-by_image.to_csv(f"{directory}/output_byImage.csv")
+by_image.sort_values("Image Number", inplace=True)
+by_image.to_csv(f"{directory}/output_byImage.csv", index=False)
 
 by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Area Average", "Left Std.", "Right std.","Overall Std.", "Area std", "Time"])
 # dtypes to make output cleaner^^
