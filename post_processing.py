@@ -6,7 +6,6 @@ Post processing for contact angle analysis.
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt  # unused
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox
