@@ -32,7 +32,7 @@ def interpTC(location, time, pins, locs=[22, 66, 110]):
 # If not, prompt user to try again or end the program
 tk.Tk().withdraw()
 while True:
-    directory = filedialog.askdirectory(initialdir=os.path.expanduser('~'))
+    directory = filedialog.askdirectory(initialdir=os.path.expanduser('~/Desktop/Lithium_Wetting/GF-Wetting'))
     try:
         with open(f'{directory}/data-0.pkl', 'rb') as f:
             pickle.load(f)
@@ -141,7 +141,7 @@ for line in loglines:
                          round(tipTemp, 2), float('{:.2e}'.format(pressure)),"None"])
         except ValueError:
             dropInfo.append([int(number), time, int(location), substrate,
-                         dropMaterial, int(imageStart[0:5]), round(float(interpTemp), 2),
+                         dropMaterial, int(imageStart[0:4]), round(float(interpTemp), 2),
                          round(tipTemp, 2), float('{:.2e}'.format(pressure)),imageStart[21:-2]])
 
 

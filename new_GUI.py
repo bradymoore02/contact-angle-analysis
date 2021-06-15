@@ -38,6 +38,8 @@ class MainApp(tk.Tk):
         self.canvas.draw()
         self.ax.clear()
         self.canvas.get_tk_widget().pack(expand=1, fill=tk.BOTH)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.plotting_frame)
+        self.toolbar.update()
 
         # label for directions
         ttk.Label(self.analysis_frame, text="Choose which data to plot:", anchor="center").grid(row=0,column=0)
@@ -50,6 +52,8 @@ class MainApp(tk.Tk):
         self.allbtn.grid(row=1, column=0, sticky="ew")
         self.clearbtn = ttk.Button(self.analysis_frame, text="Clear plot", command=self.clear)
         self.clearbtn.grid(row=4, column=0, sticky="ew")
+        self.savebtn = ttk.Button(self.analysis_frame, text="Save", command=self.save)
+        self.savebtn.grid(row=5, column=0, sticky="ew")
 
     def find_data(self):
         # creates a dictionary with all available data for plotting
@@ -147,7 +151,58 @@ class MainApp(tk.Tk):
             pass
 
     def load_mat(self):
-        pass
+        self.find_data()
+        # disable analysis buttons
+        self.matbtn["state"] = tk.DISABLED
+        self.daybtn["state"] = tk.DISABLED
+        self.allbtn["state"] = tk.DISABLED
+
+        # create new selection window
+        win = tk.Toplevel()
+        win.geometry("400x150")
+        win.title("Plot by Material")
+
+        # add labels
+        ttk.Label(win, text="Select Material: ").grid(row=0, column=0, sticky='ew')
+        # creates a local variable so og dictionary is unchanged
+        tel = self.tests
+        print(f'0{self.tests}')
+
+        # creates String variable and sets up option menu for selecting the material
+        self.material = tk.StringVar()
+        self.material.set(list(tel.keys())[0])
+
+        ttk.OptionMenu(win, self.material, self.material.get(), *tel.keys()).grid(row=0,column=1,sticky='ew')
+        print(f'1{self.tests}')
+
+        # add done button
+        ttk.Button(win, text="Done", command =lambda: self.plot_mat(self.material)).grid(row=3,column=0,columnspan=2,sticky='ew')
+
+    def plot_mat(self, material):
+        # enable analysis buttons
+        self.matbtn["state"] = tk.NORMAL
+        self.daybtn["state"] = tk.NORMAL
+        self.allbtn["state"] = tk.NORMAL
+        # closes the "load data" window
+        for widget in self.winfo_children():
+            if widget.winfo_class() == 'Toplevel':
+                widget.destroy()
+        for path in self.tests[material.get()]:
+            print(f'-{path}')
+            data = pd.read_csv(path)
+            try:
+                date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
+            except ValueError:
+                date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
+            self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
+            yerr=data["Overall Std."],fmt='s', linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
+        plt.legend()
+        self.ax.set_ylim(0)
+        self.ax.axhline(y=90, color='r', linestyle='--')
+        plt.xlabel("Substrate Temperature [\u2103]")
+        plt.ylabel("Average Contact Angle [Degrees]")
+        plt.title(f'Contact Angle vs Temperature')
+        self.canvas.draw()
 
     def plot(self, date):
         # enable analysis buttons
@@ -176,9 +231,11 @@ class MainApp(tk.Tk):
                     yerr=data["Overall Std."],fmt='s', linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
         plt.legend()
         self.ax.set_ylim(0)
+        self.ax.relim()
         self.ax.axhline(y=90, color='r', linestyle='--')
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
+        plt.title(f'{self.Material.get()} Contact angle vs Temperature')
         self.canvas.draw()
 
 
@@ -197,6 +254,10 @@ class MainApp(tk.Tk):
         '''
         self.quit()
         self.destroy()
+
+
+    def save(self):
+        plt.savefig(self.material.get())
 
 
 if __name__ == '__main__':
