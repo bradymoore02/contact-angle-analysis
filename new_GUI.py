@@ -5,12 +5,15 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2Tk
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog, messagebox
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from random import randint
+from scipy.interpolate import UnivariateSpline as spline
 
 '''
 This file creates a GUI that enables the user to plot different combinations
@@ -22,9 +25,20 @@ class MainApp(tk.Tk):
         '''
         Initializes the tkinter window and creates the layout and buttons.
         '''
+
         super().__init__()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.title("Wetting Plots")
+
+        # decide plotting shapes and colors
+        self.shapes = ['o','*','s','d','p','^','v','h','.','o','<','>','1','2','3','4','8']
+        self.s = 0
+
+        self.colors = []
+        n = 3000
+        for i in range(n):
+            self.colors.append('#%06X' % randint(0, 0xFFFFFF))
+        self.c = 0
 
         # creates frames
         self.plotting_frame = tk.Frame()
@@ -65,23 +79,24 @@ class MainApp(tk.Tk):
                 except KeyError:
                     self.tests[path[0].split("GF-Wetting/")[1].split("/")[0]] = [f"{path[0]}/output_byDrop.csv"]
 
-
     def load_all(self):
         '''
         Plots all of the saved data at one time.
         '''
         self.find_data()
         for mat in self.tests.keys():
-            print(mat)
             for path in self.tests[mat]:
-                print(f'-{path}')
                 data = pd.read_csv(path)
                 try:
                     date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
                 except ValueError:
                     date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
                 self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-                yerr=data["Overall Std."],fmt='s', linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
+                yerr=data["Overall Std."],fmt=self.shapes[self.s],c=self.colors[self.c],
+                linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
+                self.c += 1
+                print(self.c)
+            self.s += 1
         plt.legend()
         self.ax.set_ylim(0)
         self.ax.axhline(y=90, color='r', linestyle='--')
@@ -95,10 +110,6 @@ class MainApp(tk.Tk):
         Loads the data from one specific day of Testing.
         '''
         self.find_data()
-        # disable analysis buttons
-        self.matbtn["state"] = tk.DISABLED
-        self.daybtn["state"] = tk.DISABLED
-        self.allbtn["state"] = tk.DISABLED
 
         # create new selection window
         win = tk.Toplevel()
@@ -110,7 +121,6 @@ class MainApp(tk.Tk):
         ttk.Label(win, text="Select Date(s): ").grid(row=1, column=0,sticky='ew')
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
-        print(f'0{self.tests}')
 
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
@@ -118,7 +128,6 @@ class MainApp(tk.Tk):
         self.material.trace('w', self.update_options)
 
         ttk.OptionMenu(win, self.material, self.material.get(), *tel.keys()).grid(row=0,column=1,sticky='ew')
-        print(f'1{self.tests}')
 
         # creates a list of dates for the initial material
         self.dates = tel[self.material.get()]
@@ -128,7 +137,6 @@ class MainApp(tk.Tk):
         self.date.set(self.dates[0])
         self.datemenu = ttk.OptionMenu(win, self.date, self.date.get(), *self.dates)
         self.datemenu.grid(row=1,column=1,sticky='ew')
-        print(f'2{self.tests}')
 
         # add done button
         ttk.Button(win, text="Done", command =lambda: self.plot(self.date)).grid(row=3,column=0,columnspan=2,sticky='ew')
@@ -143,7 +151,6 @@ class MainApp(tk.Tk):
             self.dates = tel[self.material.get()]
             for i in range(len(self.dates)):
                 self.dates[i] = self.dates[i].split('/output')[0].split('/')[-1]
-            print(f'3{self.tests}')
             self.date.set(self.dates[0])
             self.datemenu.set_menu(self.date.get(), *self.dates)
 
@@ -152,10 +159,6 @@ class MainApp(tk.Tk):
 
     def load_mat(self):
         self.find_data()
-        # disable analysis buttons
-        self.matbtn["state"] = tk.DISABLED
-        self.daybtn["state"] = tk.DISABLED
-        self.allbtn["state"] = tk.DISABLED
 
         # create new selection window
         win = tk.Toplevel()
@@ -166,61 +169,74 @@ class MainApp(tk.Tk):
         ttk.Label(win, text="Select Material: ").grid(row=0, column=0, sticky='ew')
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
-        print(f'0{self.tests}')
 
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
         self.material.set(list(tel.keys())[0])
 
         ttk.OptionMenu(win, self.material, self.material.get(), *tel.keys()).grid(row=0,column=1,sticky='ew')
-        print(f'1{self.tests}')
 
         # add done button
         ttk.Button(win, text="Done", command =lambda: self.plot_mat(self.material)).grid(row=3,column=0,columnspan=2,sticky='ew')
 
     def plot_mat(self, material):
-        # enable analysis buttons
-        self.matbtn["state"] = tk.NORMAL
-        self.daybtn["state"] = tk.NORMAL
-        self.allbtn["state"] = tk.NORMAL
+
         # closes the "load data" window
         for widget in self.winfo_children():
             if widget.winfo_class() == 'Toplevel':
                 widget.destroy()
-        for path in self.tests[material.get()]:
-            print(f'-{path}')
+        sorted_index = np.argsort([int("".join(i.split('/')[-2].split('_'))) for  i in self.tests[material.get()]])
+
+        for i in sorted_index:
+            path = self.tests[material.get()][i]
             data = pd.read_csv(path)
             try:
                 date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
             except ValueError:
                 date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
+            print("plotting")
             self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-            yerr=data["Overall Std."],fmt='s', linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
+            yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}", ms=8)
+            self.c += 1
+            self.s += 1
+
+        x = []
+        y = []
+        print(self.ax.get_lines())
+        for line in self.ax.get_lines()[0:-1:3]:
+            x.extend(line.get_xdata())
+            y.extend(line.get_ydata())
+
+
+        zipped_lists = zip(x, y)
+        sorted_pairs = sorted(zipped_lists)
+
+        tuples = zip(*sorted_pairs)
+        x, y = [ list(tuple) for tuple in  tuples]
+        print(x)
+        print(y)
+        z = spline(x,y,s=1000)
+        self.ax.plot(x, z(x))
         plt.legend()
         self.ax.set_ylim(0)
-        self.ax.axhline(y=90, color='r', linestyle='--')
+        self.ax.axhline(y=90, color='r', linestyle='--', lw=3)
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
         plt.title(f'Contact Angle vs Temperature')
+
         self.canvas.draw()
+        self.s += 1
 
     def plot(self, date):
-        # enable analysis buttons
-        self.matbtn["state"] = tk.NORMAL
-        self.daybtn["state"] = tk.NORMAL
-        self.allbtn["state"] = tk.NORMAL
 
         self.find_data()
         # closes the "load data" window
         for widget in self.winfo_children():
             if widget.winfo_class() == 'Toplevel':
                 widget.destroy()
-        print(self.tests)
         tests = self.tests
         for key in tests.keys():
-            print(key)
             for path in tests[key]:
-                print(path)
                 if self.date.get() in path:
                     data = pd.read_csv(path)
                     try:
@@ -235,18 +251,17 @@ class MainApp(tk.Tk):
         self.ax.axhline(y=90, color='r', linestyle='--')
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
-        plt.title(f'{self.Material.get()} Contact angle vs Temperature')
+        plt.title(f'{data["Stage Material"][0]} Contact angle vs Temperature')
         self.canvas.draw()
 
 
 
     def clear(self):
         self.ax.clear()
+        self.c = 0
+        self.s = 0
         self.canvas.draw()
-        # enable analysis buttons
-        self.matbtn["state"] = tk.NORMAL
-        self.daybtn["state"] = tk.NORMAL
-        self.allbtn["state"] = tk.NORMAL
+
 
     def on_closing(self):
         '''
