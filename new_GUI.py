@@ -14,11 +14,18 @@ from datetime import datetime
 import numpy as np
 from random import randint
 from scipy.interpolate import UnivariateSpline as spline
+import math
+from scipy.optimize import curve_fit as cf
 
 '''
 This file creates a GUI that enables the user to plot different combinations
 of the wetting data saved to this computer.
 '''
+
+def cube_root(t,a,b,c):
+    return a*(t-b)**(1/3)+c
+
+
 
 class MainApp(tk.Tk):
     def __init__(self):
@@ -185,8 +192,8 @@ class MainApp(tk.Tk):
         for widget in self.winfo_children():
             if widget.winfo_class() == 'Toplevel':
                 widget.destroy()
-        sorted_index = np.argsort([int("".join(i.split('/')[-2].split('_'))) for  i in self.tests[material.get()]])
 
+        sorted_index = np.argsort([int("".join(i.split('/')[-2].split('_'))) for  i in self.tests[material.get()]])
         for i in sorted_index:
             path = self.tests[material.get()][i]
             data = pd.read_csv(path)
@@ -194,35 +201,41 @@ class MainApp(tk.Tk):
                 date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
             except ValueError:
                 date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
-            print("plotting")
             self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
             yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}", ms=8)
             self.c += 1
             self.s += 1
-
+        '''
         x = []
         y = []
-        print(self.ax.get_lines())
         for line in self.ax.get_lines()[0:-1:3]:
             x.extend(line.get_xdata())
             y.extend(line.get_ydata())
 
 
-        zipped_lists = zip(x, y)
-        sorted_pairs = sorted(zipped_lists)
 
-        tuples = zip(*sorted_pairs)
-        x, y = [ list(tuple) for tuple in  tuples]
-        print(x)
-        print(y)
-        z = spline(x,y,s=1000)
+
+        g = np.polyfit(y,x,3)
+        fit = np.poly1d(g)
+        new_x = fit(y)
+        indices = np.argsort(new_x)
+        new_x = np.array(new_x)[indices]
+        y = np.array(y)[indices]
+
+        self.ax.plot(fit(y),y,c="blue")
+        indices = np.argsort(x)
+        x = np.array(x)[indices]
+        y = np.array(y)[indices]
+
+        z = spline(x,y,k=2,s=1000)
         self.ax.plot(x, z(x))
+        '''
         plt.legend()
         self.ax.set_ylim(0)
         self.ax.axhline(y=90, color='r', linestyle='--', lw=3)
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
-        plt.title(f'Contact Angle vs Temperature')
+        plt.title(f'Untreated 304 Stainless Steel Wetting')
 
         self.canvas.draw()
         self.s += 1
@@ -272,7 +285,8 @@ class MainApp(tk.Tk):
 
 
     def save(self):
-        plt.savefig(self.material.get())
+        print(self.tests[self.material.get()][0].split('output_byDrop')[0][0:-15])
+        plt.savefig(f"{self.tests[self.material.get()][0].split('output_byDrop')[0][0:-12]}/{self.material.get()}", dpi=300)
 
 
 if __name__ == '__main__':
