@@ -16,6 +16,7 @@ from random import randint
 from scipy.interpolate import UnivariateSpline as spline
 import math
 from scipy.optimize import curve_fit as cf
+from scipy.signal import savgol_filter
 
 '''
 This file creates a GUI that enables the user to plot different combinations
@@ -38,7 +39,7 @@ class MainApp(tk.Tk):
         self.title("Wetting Plots")
 
         # decide plotting shapes and colors
-        self.shapes = ['o','*','s','d','p','^','v','h','.','o','<','>','1','2','3','4','8']
+        self.shapes = ['s','o','d','*','p','^','v','h','.','o','<','>','1','2','3','4','8']
         self.s = 0
 
         self.colors = []
@@ -54,7 +55,7 @@ class MainApp(tk.Tk):
         self.analysis_frame.grid(row=0, column=0,sticky="news")
 
         # sets up plotting frame
-        self.fig, self.ax = plt.subplots(1)
+        self.fig, self.ax = plt.subplots(1,figsize=[10,8])
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plotting_frame)
         self.canvas.draw()
         self.ax.clear()
@@ -103,7 +104,7 @@ class MainApp(tk.Tk):
                 linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
                 self.c += 1
                 print(self.c)
-            self.s += 1
+#               self.s += 1
         plt.legend()
         self.ax.set_ylim(0)
         self.ax.axhline(y=90, color='r', linestyle='--')
@@ -194,6 +195,8 @@ class MainApp(tk.Tk):
                 widget.destroy()
 
         sorted_index = np.argsort([int("".join(i.split('/')[-2].split('_'))) for  i in self.tests[material.get()]])
+        x = []
+        y = []
         for i in sorted_index:
             path = self.tests[material.get()][i]
             data = pd.read_csv(path)
@@ -202,31 +205,28 @@ class MainApp(tk.Tk):
             except ValueError:
                 date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
             self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-            yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}", ms=8)
-            self.c += 1
-            self.s += 1
+            yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}", ms=7, color=self.colors[self.c])
+            x.extend(data["Stage Temperature [C]"])
+            y.extend(data["Overall Average"])
+
+
+        self.c += 1
+
         '''
         x = []
         y = []
         for line in self.ax.get_lines()[0:-1:3]:
             x.extend(line.get_xdata())
             y.extend(line.get_ydata())
+        '''
 
-
-
-
-        g = np.polyfit(y,x,3)
-        fit = np.poly1d(g)
-        new_x = fit(y)
-        indices = np.argsort(new_x)
-        new_x = np.array(new_x)[indices]
-        y = np.array(y)[indices]
-
-        self.ax.plot(fit(y),y,c="blue")
         indices = np.argsort(x)
         x = np.array(x)[indices]
         y = np.array(y)[indices]
+        angles = savgol_filter(y, 7, 2)
+        self.ax.errorbar(x, angles)
 
+        '''
         z = spline(x,y,k=2,s=1000)
         self.ax.plot(x, z(x))
         '''
@@ -235,8 +235,7 @@ class MainApp(tk.Tk):
         self.ax.axhline(y=90, color='r', linestyle='--', lw=3)
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
-        plt.title(f'Untreated 304 Stainless Steel Wetting')
-
+        plt.title(f'{self.material.get()} Wetting')
         self.canvas.draw()
         self.s += 1
 
