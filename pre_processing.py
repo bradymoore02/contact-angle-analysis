@@ -137,8 +137,8 @@ for line in loglines:
                                                  (time - appstartdt).total_seconds()).argmin()]
         try:
             dropInfo.append([int(number), time, int(location), substrate,
-                         dropMaterial, int(imageStart), round(float(interpTemp), 2),
-                         round(tipTemp, 2), float('{:.2e}'.format(pressure)),"None"])
+                         dropMaterial, int(imageStart[0:4]), round(float(interpTemp), 2),
+                         round(float(tipTemp), 2), float('{:.2e}'.format(pressure)),"None"])
         except ValueError:
             dropInfo.append([int(number), time, int(location), substrate,
                          dropMaterial, int(imageStart[0:4]), round(float(interpTemp), 2),

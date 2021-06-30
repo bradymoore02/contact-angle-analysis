@@ -223,7 +223,7 @@ class MainApp(tk.Tk):
         indices = np.argsort(x)
         x = np.array(x)[indices]
         y = np.array(y)[indices]
-        angles = savgol_filter(y, 7, 2)
+        angles = savgol_filter(y, 5, 2)
         self.ax.errorbar(x, angles)
 
         '''
