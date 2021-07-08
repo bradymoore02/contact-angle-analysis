@@ -37,7 +37,7 @@ class MainApp(tk.Tk):
         super().__init__()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.title("Wetting Plots")
-
+#        self.find_data()
         # decide plotting shapes and colors
         self.shapes = ['s','o','d','*','p','^','v','h','.','o','<','>','1','2','3','4','8']
         self.s = 0
@@ -55,7 +55,7 @@ class MainApp(tk.Tk):
         self.analysis_frame.grid(row=0, column=0,sticky="news")
 
         # sets up plotting frame
-        self.fig, self.ax = plt.subplots(1,figsize=[10,8])
+        self.fig, self.ax = plt.subplots(1,figsize=[8,6])
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plotting_frame)
         self.canvas.draw()
         self.ax.clear()
@@ -80,7 +80,8 @@ class MainApp(tk.Tk):
     def find_data(self):
         # creates a dictionary with all available data for plotting
         self.tests = {}
-        for path in os.walk(os.path.expanduser('~/Desktop/Lithium_Wetting/GF-Wetting')):
+        print("hi")
+        for path in os.walk(os.path.expanduser('~/Desktop/CPMI/Lithium_Wetting/GF-Wetting')):
             if "output_byDrop.csv" in path[-1]:
                 try:
                     self.tests[path[0].split("GF-Wetting/")[1].split("/")[0]].append(f"{path[0]}/output_byDrop.csv")
@@ -130,6 +131,7 @@ class MainApp(tk.Tk):
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
 
+        print(tel)
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
         self.material.set(list(tel.keys())[0])
@@ -177,6 +179,7 @@ class MainApp(tk.Tk):
         ttk.Label(win, text="Select Material: ").grid(row=0, column=0, sticky='ew')
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
+        print(tel)
 
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
@@ -185,7 +188,7 @@ class MainApp(tk.Tk):
         ttk.OptionMenu(win, self.material, self.material.get(), *tel.keys()).grid(row=0,column=1,sticky='ew')
 
         # add done button
-        ttk.Button(win, text="Done", command =lambda: self.plot_mat(self.material)).grid(row=3,column=0,columnspan=2,sticky='ew')
+        ttk.Button(win, text="Done", command=lambda: self.plot_mat(self.material)).grid(row=3,column=0,columnspan=2,sticky='ew')
 
     def plot_mat(self, material):
 
@@ -219,13 +222,13 @@ class MainApp(tk.Tk):
             x.extend(line.get_xdata())
             y.extend(line.get_ydata())
         '''
-
+        '''
         indices = np.argsort(x)
         x = np.array(x)[indices]
         y = np.array(y)[indices]
         angles = savgol_filter(y, 5, 2)
         self.ax.errorbar(x, angles)
-
+        '''
         '''
         z = spline(x,y,k=2,s=1000)
         self.ax.plot(x, z(x))
