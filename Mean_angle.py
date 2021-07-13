@@ -7,7 +7,7 @@ import math
 # creates a dictionary with all available data for plotting
 tests = {}
 b =1
-for path in os.walk(os.path.expanduser('~/Desktop/Lithium_Wetting/GF-Wetting')):
+for path in os.walk(os.path.expanduser('~/Desktop/CPMI/Lithium_Wetting/GF-Wetting')):
     if "output_byDrop.csv" in path[-1]:
         try:
             tests[path[0].split("GF-Wetting/")[1].split("/")[0]].append(f"{path[0]}/output_byDrop.csv")
@@ -15,7 +15,7 @@ for path in os.walk(os.path.expanduser('~/Desktop/Lithium_Wetting/GF-Wetting')):
             tests[path[0].split("GF-Wetting/")[1].split("/")[0]] = [f"{path[0]}/output_byDrop.csv"]
 print(tests[list(tests.keys())[0]])
 
-with open("/Users/bradymoore/Desktop/LaTex_file.tex",'w') as f:
+with open("/Users/bradymoore/Desktop/CPMI/LaTex_file.tex",'w') as f:
     f.write(
     '''
     \documentclass{article}
@@ -68,7 +68,7 @@ with open("/Users/bradymoore/Desktop/LaTex_file.tex",'w') as f:
         plt.xlim(0,500)
         plt.title(material)
         plt.show()
-        
+
 
 
     f.write(

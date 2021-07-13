@@ -22,7 +22,11 @@ from scipy.signal import savgol_filter
 This file creates a GUI that enables the user to plot different combinations
 of the wetting data saved to this computer.
 '''
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 18}
 
+matplotlib.rc('font', **font)
 def cube_root(t,a,b,c):
     return a*(t-b)**(1/3)+c
 
@@ -41,7 +45,7 @@ class MainApp(tk.Tk):
         # decide plotting shapes and colors
         self.shapes = ['s','o','d','*','p','^','v','h','.','o','<','>','1','2','3','4','8']
         self.s = 0
-
+        self.data_on_plot = False
         self.colors = []
         n = 3000
         for i in range(n):
@@ -70,8 +74,6 @@ class MainApp(tk.Tk):
         self.matbtn.grid(row=3, column=0,sticky="ew")
         self.daybtn = ttk.Button(self.analysis_frame,text="One day",command=self.load_day)
         self.daybtn.grid(row=2, column=0, sticky="ew")
-        self.allbtn = ttk.Button(self.analysis_frame, text="All data",command=self.load_all)
-        self.allbtn.grid(row=1, column=0, sticky="ew")
         self.clearbtn = ttk.Button(self.analysis_frame, text="Clear plot", command=self.clear)
         self.clearbtn.grid(row=4, column=0, sticky="ew")
         self.savebtn = ttk.Button(self.analysis_frame, text="Save", command=self.save)
@@ -87,32 +89,6 @@ class MainApp(tk.Tk):
                     self.tests[path[0].split("GF-Wetting/")[1].split("/")[0]].append(f"{path[0]}/output_byDrop.csv")
                 except KeyError:
                     self.tests[path[0].split("GF-Wetting/")[1].split("/")[0]] = [f"{path[0]}/output_byDrop.csv"]
-
-    def load_all(self):
-        '''
-        Plots all of the saved data at one time.
-        '''
-        self.find_data()
-        for mat in self.tests.keys():
-            for path in self.tests[mat]:
-                data = pd.read_csv(path)
-                try:
-                    date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
-                except ValueError:
-                    date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
-                self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-                yerr=data["Overall Std."],fmt=self.shapes[self.s],c=self.colors[self.c],
-                linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}")
-                self.c += 1
-                print(self.c)
-#               self.s += 1
-        plt.legend()
-        self.ax.set_ylim(0)
-        self.ax.axhline(y=90, color='r', linestyle='--')
-        plt.xlabel("Substrate Temperature [\u2103]")
-        plt.ylabel("Average Contact Angle [Degrees]")
-        self.canvas.draw()
-
 
     def load_day(self):
         '''
@@ -202,17 +178,20 @@ class MainApp(tk.Tk):
         y = []
         for i in sorted_index:
             path = self.tests[material.get()][i]
-            data = pd.read_csv(path)
             try:
-                date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S.%f').strftime('%m/%d/%Y')
-            except ValueError:
-                date = datetime.strptime(data["Time"][1], '%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y')
-            self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-            yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]} on {date}", ms=7, color=self.colors[self.c])
-            x.extend(data["Stage Temperature [C]"])
-            y.extend(data["Overall Average"])
+                data = data.append(pd.read_csv(path))
+                print("2")
+            except:
+                print("1")
+                print(path)
+                data = pd.read_csv(path)
+        data.reset_index(inplace=True)
+        self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
+        yerr=data["Overall Std."],fmt=self.shapes[self.s], linewidth = 2, capsize=3, label=f"{data['Stage Material'][0]}", ms=7)
+        x.extend(data["Stage Temperature [C]"])
+        y.extend(data["Overall Average"])
 
-
+        data_on_plot = True
         self.c += 1
 
         '''
@@ -234,11 +213,12 @@ class MainApp(tk.Tk):
         self.ax.plot(x, z(x))
         '''
         plt.legend()
-        self.ax.set_ylim(0)
-        self.ax.axhline(y=90, color='r', linestyle='--', lw=3)
+        self.ax.set_ylim(0,141)
+        self.ax.set_xlim(195,440)
+        self.ax.axhline(y=90, color='k', linestyle='--', lw=3)
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
-        plt.title(f'{self.material.get()} Wetting')
+        plt.title(f'Wetting on Various Substrates')
         self.canvas.draw()
         self.s += 1
 
@@ -263,7 +243,7 @@ class MainApp(tk.Tk):
         plt.legend()
         self.ax.set_ylim(0)
         self.ax.relim()
-        self.ax.axhline(y=90, color='r', linestyle='--')
+        self.ax.axhline(y=90, color='k', linestyle='--')
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
         plt.title(f'{data["Stage Material"][0]} Contact angle vs Temperature')
@@ -287,9 +267,20 @@ class MainApp(tk.Tk):
 
 
     def save(self):
-        print(self.tests[self.material.get()][0].split('output_byDrop')[0][0:-15])
-        plt.savefig(f"{self.tests[self.material.get()][0].split('output_byDrop')[0][0:-12]}/{self.material.get()}", dpi=300)
+        if self.data_on_plot:
+            win = tk.Toplevel()
+            win.geometry("400x150")
+            win.title("Plot by Material")
 
+        # add labels
+            ttk.Label(win, text="Select Material: ").grid(row=0, column=0, sticky='ew')
+            print(self.tests[self.material.get()][0].split('output_byDrop')[0][0:-12])
+            plt.savefig(f"{self.tests[self.material.get()][0].split('output_byDrop')[0][0:-12]}/{self.material.get()}", dpi=300)
+        else:
+            win = tk.Toplevel()
+            win.geometry("200x75")
+            win.title("No Data")
+            ttk.Label(win, text="There is no data pl")
 
 if __name__ == '__main__':
     app = MainApp()
