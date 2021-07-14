@@ -73,7 +73,8 @@ class MainApp(tk.Tk):
         self.clearbtn.grid(row=20, column=0, sticky="ew")
         self.savebtn = ttk.Button(self.analysis_frame, text="Save", command=self.save_window)
         self.savebtn.grid(row=21, column=0, sticky="ew")
-
+        self.newdatabtn = ttk.Button(self.analysis_frame, text="New data", command=self.new_data)
+        self.newdatabtn.grid(row=22, column=0, sticky="ew")
 
         ttk.Label(self.style_frame, text="Plot Title:", anchor="center").grid(row=0, column=0)
         self.title1 = tk.StringVar()
@@ -82,11 +83,14 @@ class MainApp(tk.Tk):
         self.titlebtn = ttk.Button(self.style_frame, text="Update title", command=self.update_title)
         self.titlebtn.grid(row=2,column=0, sticky="ew")
 
+    def new_data(self):
+        os.system("python3 pre_processing.py")
+        os.system("python3 post_processing.py")
 
+        
     def find_data(self):
         # creates a dictionary with all available data for plotting
         self.tests = {}
-        print("hi")
         for path in os.walk(os.path.expanduser('~/Desktop/CPMI/Lithium_Wetting/GF-Wetting')):
             if "output_byDrop.csv" in path[-1]:
                 try:
@@ -111,7 +115,6 @@ class MainApp(tk.Tk):
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
 
-        print(tel)
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
         self.material.set(list(tel.keys())[0])
@@ -159,11 +162,13 @@ class MainApp(tk.Tk):
         ttk.Label(win, text="Select Material: ").grid(row=0, column=0, sticky='ew')
         # creates a local variable so og dictionary is unchanged
         tel = self.tests
-        print(tel)
-
+        ttk.Label(win, text="Legend entry: ").grid(row=3, column=0, sticky='ew')
+        self.leg = tk.StringVar()
+        ttk.Entry(win, textvariable=self.leg).grid(row=3, column=1, sticky='ew')
         # creates String variable and sets up option menu for selecting the material
         self.material = tk.StringVar()
         self.material.set(list(tel.keys())[0])
+        self.material.trace('w', self.leg_set)
         ttk.OptionMenu(win, self.material, self.material.get(), *tel.keys()).grid(row=0,column=1,sticky='ew')
 
         # Sets up color and shape selection
@@ -177,12 +182,13 @@ class MainApp(tk.Tk):
         self.shape.set(list(self.shapes.keys())[0])
         ttk.OptionMenu(win, self.shape, self.shape.get(), *self.shapes.keys()).grid(row=2, column=1, sticky='ew')
 
-        ttk.Label(win, text="Legend entry: ").grid(row=3, column=0, sticky='ew')
-        self.leg = tk.StringVar()
-        self.leg.set(f"{self.material.get()}")
-        ttk.Entry(win, textvariable=self.leg).grid(row=3, column=1, sticky='ew')
         # add done button
         ttk.Button(win, text="Done", command=lambda: self.plot_mat(self.material)).grid(row=4,column=0,columnspan=2,sticky='ew')
+
+
+    def leg_set(self, *args):
+        self.leg.set(self.material.get())
+
 
     def plot_mat(self, material):
 
@@ -196,10 +202,7 @@ class MainApp(tk.Tk):
             path = self.tests[material.get()][i]
             try:
                 data = data.append(pd.read_csv(path))
-                print("2")
             except:
-                print("1")
-                print(path)
                 data = pd.read_csv(path)
         data.reset_index(inplace=True)
         self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
