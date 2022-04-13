@@ -20,10 +20,17 @@ def interpTC(location, time, pins, locs=[22, 66, 110]):
     Interpolate the stage temperature at drop location
     using linear interpolation/extrapolation
     '''
-    vals = []
+
+    vals = np.ones(3)*np.nan
+    loc_list = ["Left", "Middle", "Right"]
+
     for pin in pins:
-        vals.append(data[pin]['data'][abs(data[pin]['time'] -
-                                          (time-appstartdt).total_seconds()).argmin()])
+        idx = loc_list.index(data[pin]["nickname"].split()[1])
+        vals[idx] = data[pin]['data'][abs(data[pin]['time'] -
+                                          (time-appstartdt).total_seconds()).argmin()]
+    idx = ~np.isnan(vals)
+    vals = vals[idx]
+    locs =np.array(locs)[idx]
     interp = interp1d(locs, vals, fill_value='extrapolate')
     return interp(location)
 
@@ -86,7 +93,6 @@ for line in loglines:
     if 'Application Started' in line:
         appstart = float(line.split(' ')[-1])
         appstartdt = dt.datetime.strptime(line.split(' - ')[0], '%Y-%m-%d %H:%M:%S,%f')
-
 # Convert data to appropriate data types and warning the user of issues
 for key, value in data.items():
     value['time'] = np.array(value['time']) - appstart

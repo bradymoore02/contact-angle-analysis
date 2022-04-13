@@ -40,9 +40,8 @@ for cap in droplets.name:
     for i in cap: # you can also just put this straight in for n, cap in enumerate(droplets.name):
         if i.isnumeric(): # droplets.loc[n,'name'] = num
             num += i
-    array.append(int(num[-5:]))
+    array.append(int(num[-4:]))
 droplets.name = array
-
 #creates a new dataframe to store data in terms of each drop
 by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Injector Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Time"])
 #make image number first

@@ -87,7 +87,7 @@ class MainApp(tk.Tk):
         os.system("python3 pre_processing.py")
         os.system("python3 post_processing.py")
 
-        
+
     def find_data(self):
         # creates a dictionary with all available data for plotting
         self.tests = {}
@@ -206,7 +206,7 @@ class MainApp(tk.Tk):
                 data = pd.read_csv(path)
         data.reset_index(inplace=True)
         self.ax.errorbar(data["Stage Temperature [C]"], data["Overall Average"],
-        yerr=data["Overall Std."],fmt=self.shapes[self.shape.get()], c=self.color.get(),linewidth = 2, capsize=3, label=self.leg.get(), ms=7)
+        yerr=data["Overall Std."],fmt=self.shapes[self.shape.get()], c=self.color.get(),linewidth = 2, capsize=3, label=self.leg.get(), ms=6)
         x.extend(data["Stage Temperature [C]"])
         y.extend(data["Overall Average"])
 
@@ -233,7 +233,7 @@ class MainApp(tk.Tk):
         '''
         plt.legend()
         self.ax.set_ylim(0,141)
-        self.ax.set_xlim(195,440)
+        self.ax.set_xlim(195,360)
         self.ax.axhline(y=90, color='k', linestyle='--', lw=3)
         plt.xlabel("Substrate Temperature [\u2103]")
         plt.ylabel("Average Contact Angle [Degrees]")
