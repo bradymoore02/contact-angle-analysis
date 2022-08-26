@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
 import sys
+import re
 
 tk.Tk().withdraw()
 while True:
@@ -34,13 +35,10 @@ droplets.left = 180 - droplets.left
 
 #cleans up the file names by only keeping the image number
 array = []
-for cap in droplets.name:
-    cap = str(cap).split('.')[0].split('-')[0].split('_')[-1]
-    num = ""
-    for i in cap: # you can also just put this straight in for n, cap in enumerate(droplets.name):
-        if i.isnumeric(): # droplets.loc[n,'name'] = num
-            num += i
-    array.append(int(num[-4:]))
+for filename in droplets.name:
+    filename = re.sub("-\d\.", ".", filename)
+    filename = int(filename.split('.')[0][-4:])
+    array.append(filename)
 droplets.name = array
 #creates a new dataframe to store data in terms of each drop
 by_image = pd.DataFrame(columns=["Image Number", "Drop #", "Stage Temperature [C]", "Injector Temperature [C]", "Stage Material", "Drop Material", "Left angle", "Right angle", "Time"])
@@ -57,7 +55,6 @@ for ind in range(len(overview)):
                 by_image.loc[idx] = array
 by_image.sort_values("Image Number", inplace=True)
 by_image.to_csv(f"{directory}/output_byImage.csv", index=False)
-
 by_drop = pd.DataFrame(columns=["Drop #", "Stage Temperature [C]", "Injector Temperature [C]", "Stage Material", "Drop Material", "Left Average", "Right Average", "Overall Average", "Left Std.", "Right std.","Overall Std.", "Time"])
 # dtypes to make output cleaner^^
 for ind in overview.index:
